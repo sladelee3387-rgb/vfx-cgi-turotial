@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-POP VFX LAB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#07070f;--bg2:#0e0e1e;--bg3:#141428;--card:#111124;
+  --pink:#ff2d78;--cyan:#00e5ff;--purple:#b44fff;--gold:#ffb347;--green:#3ddc84;
+  --white:#eeeeff;--gray:#6666aa;--lgray:#bbbbdd;--border:rgba(180,79,255,0.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'Noto Sans KR',sans-serif;min-height:100vh;overflow-x:hidden;cursor:none}
+#cur{position:fixed;width:10px;height:10px;background:var(--pink);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .15s,height .15s,background .15s;mix-blend-mode:screen}
+#cur2{position:fixed;width:32px;height:32px;border:1.5px solid var(--cyan);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .18s,height .18s;opacity:.6}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:9990}
+
+.shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo-area{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+.logo{font-family:'Rajdhani',sans-serif;font-size:1.55rem;font-weight:700;letter-spacing:.12em;color:var(--pink);line-height:1}
+.logo span{color:var(--cyan)}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--gray);letter-spacing:.18em;margin-top:5px}
+.search-wrap{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);padding:8px 12px;border-radius:4px;transition:border-color .2s}
+.search-box:focus-within{border-color:var(--cyan)}
+.search-box input{background:none;border:none;outline:none;color:var(--white);font-family:'Noto Sans KR',sans-serif;font-size:.82rem;width:100%;caret-color:var(--cyan)}
+.search-box input::placeholder{color:var(--gray)}
+.search-icon{color:var(--gray);font-size:.85rem}
+.nav-section{padding:12px 0}
+.nav-label{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--gray);letter-spacing:.18em;padding:6px 20px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;transition:background .15s,color .15s;position:relative;font-size:.85rem;color:var(--lgray)}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--white)}
+.nav-item.active{color:var(--white);background:rgba(255,45,120,.08)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--pink)}
+.nav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-vfx{background:var(--pink)}.dot-blender{background:var(--gold)}.dot-c4d{background:var(--cyan)}.dot-houdini{background:var(--purple)}.dot-nuke{background:var(--green)}
+.nav-count{margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:.65rem;background:rgba(255,255,255,.07);color:var(--gray);padding:2px 7px;border-radius:99px}
+.level-filter{padding:12px 16px;border-top:1px solid var(--border)}
+.level-label{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--gray);letter-spacing:.18em;margin-bottom:8px}
+.level-chips{display:flex;flex-direction:column;gap:4px}
+.level-chip{padding:6px 10px;font-size:.78rem;color:var(--lgray);border:1px solid var(--border);border-radius:3px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+.level-chip:hover{border-color:rgba(255,255,255,.25);color:var(--white)}
+.level-chip.active{background:rgba(180,79,255,.12);border-color:var(--purple);color:var(--white)}
+.chip-dot{width:6px;height:6px;border-radius:50%}
+.cd-beg{background:#3ddc84}.cd-int{background:#ffb347}.cd-adv{background:#ff2d78}
+.bookmark-toggle{margin:8px 16px;padding:8px 10px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.18);border-radius:3px;font-size:.78rem;color:var(--cyan);cursor:pointer;text-align:center;transition:background .2s}
+.bookmark-toggle:hover{background:rgba(0,229,255,.12)}
+.bookmark-toggle.on{background:rgba(0,229,255,.14);border-color:var(--cyan)}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+.stat-row{display:flex;gap:8px}
+.mini-stat{flex:1;background:var(--card);padding:8px;border-radius:4px;text-align:center}
+.mini-stat-num{font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:var(--pink)}
+.mini-stat:nth-child(2) .mini-stat-num{color:var(--cyan)}
+.mini-stat:nth-child(3) .mini-stat-num{color:var(--purple)}
+.mini-stat-lbl{font-size:.62rem;color:var(--gray);margin-top:2px}
+
+/* MAIN */
+.main{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 32px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.breadcrumb{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--gray);letter-spacing:.1em}
+.breadcrumb span{color:var(--white)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.sort-select{background:var(--card);border:1px solid var(--border);color:var(--lgray);font-family:'Share Tech Mono',monospace;font-size:.7rem;padding:5px 10px;border-radius:3px;cursor:pointer;outline:none}
+.sort-select:focus{border-color:var(--cyan)}
+.view-toggle{display:flex;gap:2px}
+.view-btn{width:30px;height:28px;background:var(--card);border:1px solid var(--border);color:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:all .15s}
+.view-btn.active{background:rgba(180,79,255,.15);border-color:var(--purple);color:var(--white)}
+.hero-band{padding:28px 32px 20px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero-band::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,45,120,.06),rgba(0,229,255,.04));pointer-events:none}
+.hero-title{font-family:'Black Han Sans',sans-serif;font-size:1.8rem;color:var(--white);margin-bottom:6px}
+.hero-title em{font-style:normal;background:linear-gradient(90deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-desc{font-size:.85rem;color:var(--lgray);max-width:520px;line-height:1.6}
+.hero-tags{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.hero-tag-pill{font-family:'Share Tech Mono',monospace;font-size:.65rem;padding:3px 10px;border:1px solid var(--border);color:var(--gray);border-radius:99px}
+.content{padding:24px 32px;flex:1}
+.results-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.results-count{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--gray)}
+.results-count span{color:var(--cyan)}
+.active-filters{display:flex;gap:6px;flex-wrap:wrap}
+.af-chip{font-size:.7rem;padding:3px 9px;border-radius:99px;background:rgba(255,45,120,.1);border:1px solid rgba(255,45,120,.3);color:var(--pink);display:flex;align-items:center;gap:5px;cursor:pointer}
+.af-chip:hover{background:rgba(255,45,120,.2)}
+
+/* GRID */
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.video-grid.list-view{grid-template-columns:1fr;gap:8px}
+
+/* CARD */
+.vcard{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;position:relative;animation:cardIn .35s ease both}
+.vcard:hover{transform:translateY(-4px);border-color:rgba(180,79,255,.45);box-shadow:0 8px 36px rgba(180,79,255,.18)}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* THUMBNAIL */
+.vcard .thumb{width:100%;aspect-ratio:16/9;background:var(--bg3);position:relative;overflow:hidden}
+.vcard .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s;image-rendering:auto}
+.vcard:hover .thumb img{transform:scale(1.07)}
+.thumb-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 50%);opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
+.vcard:hover .thumb-overlay{opacity:1}
+.play-circle{width:52px;height:52px;background:rgba(255,45,120,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(255,45,120,.6);transition:transform .2s}
+.vcard:hover .play-circle{transform:scale(1.08)}
+.play-tri{width:0;height:0;border-top:11px solid transparent;border-bottom:11px solid transparent;border-left:18px solid white;margin-left:5px}
+
+.lvl-badge{position:absolute;top:8px;left:8px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:99px}
+.lvl-beg{background:#1a3d2b;color:#3ddc84;border:1px solid rgba(61,220,132,.3)}
+.lvl-int{background:#3d2e0a;color:#ffb347;border:1px solid rgba(255,179,71,.3)}
+.lvl-adv{background:#3d0f1a;color:#ff2d78;border:1px solid rgba(255,45,120,.3)}
+.dur-badge{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.85);color:#fff;font-family:'Share Tech Mono',monospace;font-size:.68rem;padding:2px 7px;border-radius:3px;backdrop-filter:blur(4px)}
+.bk-btn{position:absolute;top:8px;right:8px;width:28px;height:28px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.15);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:background .15s;z-index:2}
+.bk-btn:hover,.bk-btn.saved{background:rgba(255,45,120,.3);border-color:var(--pink)}
+.bk-btn.saved{color:var(--pink)}
+.vcard .info{padding:12px}
+.vcard .vtitle{font-size:.82rem;font-weight:500;color:var(--white);line-height:1.45;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vcard .vmeta{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.vcard .vchannel{font-size:.72rem;color:var(--gray);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vcard .vtopic{font-family:'Share Tech Mono',monospace;font-size:.6rem;padding:2px 8px;border:1px solid var(--border);border-radius:99px;color:var(--gray);white-space:nowrap;flex-shrink:0}
+
+.video-grid.list-view .vcard{display:grid;grid-template-columns:220px 1fr}
+.video-grid.list-view .vcard .thumb{height:100%;min-height:110px}
+.video-grid.list-view .vcard .info{display:flex;flex-direction:column;justify-content:center;padding:14px 16px}
+.video-grid.list-view .vcard .vtitle{-webkit-line-clamp:3;font-size:.88rem}
+
+.empty{text-align:center;padding:4rem;color:var(--gray);grid-column:1/-1}
+.empty-icon{font-size:2.5rem;margin-bottom:1rem;opacity:.3}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(8px)}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:10px;width:min(820px,94vw);max-height:92vh;overflow-y:auto;transform:translateY(24px) scale(.97);transition:transform .28s cubic-bezier(.34,1.56,.64,1)}
+.modal-bg.open .modal{transform:translateY(0) scale(1)}
+
+.modal-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:1.08rem;font-weight:700;color:var(--white);line-height:1.4;flex:1}
+.modal-close{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--gray);font-size:1rem;cursor:pointer;line-height:1;padding:6px 10px;border-radius:4px;transition:all .15s;flex-shrink:0}
+.modal-close:hover{background:rgba(255,45,120,.2);border-color:var(--pink);color:var(--white)}
+
+.modal-body{padding:20px 22px}
+
+/* YouTube iframe embed */
+.modal-player{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:6px;overflow:hidden;margin-bottom:16px;border:1px solid var(--border)}
+.modal-player iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+/* fallback thumbnail if no video id */
+.modal-thumb-fallback{width:100%;height:100%;object-fit:cover;display:block}
+
+.modal-actions{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.modal-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:700;text-decoration:none;letter-spacing:.05em;transition:opacity .15s;cursor:pointer;border:none}
+.modal-btn-primary{background:var(--pink);color:#fff}
+.modal-btn-primary:hover{opacity:.85}
+.modal-btn-secondary{background:transparent;border:1px solid var(--border);color:var(--lgray)}
+.modal-btn-secondary:hover{border-color:var(--cyan);color:var(--cyan)}
+.modal-btn-secondary.bk-active{border-color:var(--pink);color:var(--pink)}
+
+.modal-meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.modal-meta-item{background:var(--card);padding:10px 14px;border-radius:5px}
+.mmi-label{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--gray);letter-spacing:.12em;margin-bottom:3px}
+.mmi-val{font-size:.82rem;color:var(--white)}
+
+.modal-desc{font-size:.83rem;color:var(--lgray);line-height:1.75;border-top:1px solid var(--border);padding-top:14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--bg2);border:1px solid var(--purple);color:var(--white);font-size:.8rem;padding:10px 18px;border-radius:4px;z-index:9999;transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none;font-family:'Share Tech Mono',monospace;letter-spacing:.06em}
+.toast.show{transform:translateY(0);opacity:1}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}::-webkit-scrollbar-thumb:hover{background:var(--purple)}
+
+@media(max-width:768px){
+  .shell{grid-template-columns:1fr}.sidebar{display:none}
+  .video-grid.list-view .vcard{grid-template-columns:1fr}
+  .modal-meta-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div><div id="cur2"></div>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo">K-POP <span>VFX</span></div>
+    <div class="logo-sub">TUTORIAL LAB v2.0</div>
+  </div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <span class="search-icon">&#8981;</span>
+      <input type="text" id="searchInput" placeholder="튜토리얼 검색...">
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">카테고리</div>
+    <div class="nav-item active" data-tab="all" onclick="setTab('all',this)"><span class="nav-dot" style="background:var(--white);opacity:.4"></span>전체 튜토리얼<span class="nav-count" id="cnt-all">0</span></div>
+    <div class="nav-item" data-tab="vfx" onclick="setTab('vfx',this)"><span class="nav-dot dot-vfx"></span>VFX 합성<span class="nav-count" id="cnt-vfx">0</span></div>
+    <div class="nav-item" data-tab="blender" onclick="setTab('blender',this)"><span class="nav-dot dot-blender"></span>Blender<span class="nav-count" id="cnt-blender">0</span></div>
+    <div class="nav-item" data-tab="c4d" onclick="setTab('c4d',this)"><span class="nav-dot dot-c4d"></span>Cinema 4D<span class="nav-count" id="cnt-c4d">0</span></div>
+    <div class="nav-item" data-tab="houdini" onclick="setTab('houdini',this)"><span class="nav-dot dot-houdini"></span>Houdini<span class="nav-count" id="cnt-houdini">0</span></div>
+    <div class="nav-item" data-tab="nuke" onclick="setTab('nuke',this)"><span class="nav-dot dot-nuke"></span>Nuke<span class="nav-count" id="cnt-nuke">0</span></div>
+  </div>
+  <div class="level-filter">
+    <div class="level-label">난이도 필터</div>
+    <div class="level-chips">
+      <div class="level-chip active" data-level="all" onclick="setLevel('all',this)"><span class="chip-dot" style="background:var(--white);opacity:.3"></span>전체 레벨</div>
+      <div class="level-chip" data-level="초급" onclick="setLevel('초급',this)"><span class="chip-dot cd-beg"></span>초급 — Beginner</div>
+      <div class="level-chip" data-level="중급" onclick="setLevel('중급',this)"><span class="chip-dot cd-int"></span>중급 — Intermediate</div>
+      <div class="level-chip" data-level="고급" onclick="setLevel('고급',this)"><span class="chip-dot cd-adv"></span>고급 — Advanced</div>
+    </div>
+  </div>
+  <div class="bookmark-toggle" id="bkToggle" onclick="toggleBookmarkMode()">☆ 북마크 보기</div>
+  <div class="sidebar-footer">
+    <div class="stat-row">
+      <div class="mini-stat"><div class="mini-stat-num" id="stat-total">0</div><div class="mini-stat-lbl">전체</div></div>
+      <div class="mini-stat"><div class="mini-stat-num" id="stat-saved">0</div><div class="mini-stat-lbl">북마크</div></div>
+      <div class="mini-stat"><div class="mini-stat-num" id="stat-cats">5</div><div class="mini-stat-lbl">카테고리</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="breadcrumb">K-POP VFX LAB / <span id="breadTab">전체 튜토리얼</span></div>
+    <div class="topbar-right">
+      <select class="sort-select" id="sortSel" onchange="render()">
+        <option value="default">기본 정렬</option>
+        <option value="title">제목순</option>
+        <option value="dur_asc">짧은 순</option>
+        <option value="dur_desc">긴 순</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn active" id="gridBtn" onclick="setView('grid')">⊞</button>
+        <button class="view-btn" id="listBtn" onclick="setView('list')">☰</button>
+      </div>
+    </div>
+  </div>
+  <div class="hero-band">
+    <h1 class="hero-title" id="heroTitle">K-POP MV <em>VFX 튜토리얼</em> 전체</h1>
+    <p class="hero-desc" id="heroDesc">After Effects · Blender · Cinema 4D · Houdini · Nuke — K-pop 뮤직비디오 스타일 비주얼 이펙트 제작의 모든 것을 한 곳에서 학습하세요.</p>
+    <div class="hero-tags">
+      <span class="hero-tag-pill">파티클</span><span class="hero-tag-pill">합성</span><span class="hero-tag-pill">모션그래픽</span><span class="hero-tag-pill">3D 렌더링</span><span class="hero-tag-pill">홀로그램</span><span class="hero-tag-pill">시뮬레이션</span>
+    </div>
+  </div>
+  <div class="content">
+    <div class="results-bar">
+      <div class="results-count"><span id="resNum">0</span>개 튜토리얼</div>
+      <div class="active-filters" id="activeFilters"></div>
+    </div>
+    <div class="video-grid" id="grid"></div>
+  </div>
+</main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="handleModalBgClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModal()">✕ 닫기</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-player" id="modalPlayer"></div>
+      <div class="modal-actions">
+        <a class="modal-btn modal-btn-primary" id="modalYtLink" href="#" target="_blank" rel="noopener">▶ YouTube에서 열기</a>
+        <button class="modal-btn modal-btn-secondary" id="modalBkBtn" onclick="modalToggleBk()">☆ 북마크</button>
+      </div>
+      <div class="modal-meta-grid" id="modalMeta"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const VIDEOS = [
+  // VFX — vid IDs from thumb urls
+  {id:'vfx01',tab:'vfx',title:'After Effects — K-pop 파티클 & 글로우 이펙트 풀 강좌',channel:'Motion Array',level:'초급',duration:'18:42',topic:'파티클',vid:'nKiyg0LbqaU',desc:'After Effects를 사용해 K-pop 뮤직비디오에서 자주 사용되는 파티클과 글로우 이펙트를 처음부터 끝까지 제작하는 튜토리얼입니다. 기본 이펙트부터 레이어 합성 기법까지 초보자도 따라할 수 있습니다.'},
+  {id:'vfx02',tab:'vfx',title:'Nuke 컴포지팅 — 그린스크린 키잉 & 배경 합성 완전 정복',channel:'VFX Study',level:'중급',duration:'34:15',topic:'합성',vid:'eFmjEwVCnDQ',desc:'Nuke의 Keylight와 IBK 노드를 활용한 전문 그린스크린 키잉 기법을 학습합니다. 스필 제거, 엣지 처리, 배경 합성까지 실무 워크플로우를 완전히 다룹니다.'},
+  {id:'vfx03',tab:'vfx',title:'After Effects — 홀로그램 HUD 이펙트 (K-pop MV 스타일)',channel:'Ignace Aleya',level:'중급',duration:'22:30',topic:'홀로그램',vid:'YOHvmieHfKA',desc:'aespa, 나이비스 스타일의 홀로그램 HUD 인터페이스를 After Effects로 제작하는 방법을 단계별로 설명합니다. 블루프린트 스타일 UI와 스캔라인 이펙트를 포함합니다.'},
+  {id:'vfx04',tab:'vfx',title:'Mocha Pro — 카메라 트래킹 & 플래너 트래킹 실전',channel:'Boris FX',level:'중급',duration:'28:50',topic:'트래킹',vid:'NfnMFMQRfzw',desc:'Mocha Pro의 플래너 트래킹과 3D 카메라 솔브 기능을 실무 MV 씬에 적용하는 방법을 학습합니다. 특히 빠른 카메라 무브먼트와 불안정한 핸드헬드 영상 처리에 효과적입니다.'},
+  {id:'vfx05',tab:'vfx',title:'After Effects — 네온 글로우 & 라이트 스트릭',channel:'School of Motion',level:'초급',duration:'14:08',topic:'글로우',vid:'CsksDiNRNBc',desc:'K-pop MV의 무대 조명과 네온 아트 스타일을 After Effects에서 재현하는 글로우 이펙트 기법을 배웁니다. Optical Flares와 기본 내장 이펙트를 활용합니다.'},
+  {id:'vfx06',tab:'vfx',title:'Trapcode Particular — 파티클 시스템 마스터 클래스',channel:'Red Giant',level:'고급',duration:'52:40',topic:'파티클',vid:'jUz4J8n5QMo',desc:'Trapcode Particular의 Physics, Emission, Rendering 시스템을 완전히 마스터하는 심화 강좌입니다. 파이어, 스모크, 마법 이펙트 등 K-pop MV에 자주 등장하는 파티클을 만들 수 있습니다.'},
+  {id:'vfx07',tab:'vfx',title:'DaVinci Resolve Fusion — 노드 기반 VFX 합성 입문',channel:'Casey Faris',level:'초급',duration:'20:17',topic:'합성',vid:'OXNYK_n2eAQ',desc:'DaVinci Resolve 내장 합성 도구인 Fusion을 처음 배우는 분들을 위한 입문 강좌. 노드 기반 워크플로우의 개념부터 시작해 기본 VFX 합성까지 빠르게 익힙니다.'},
+  {id:'vfx08',tab:'vfx',title:'After Effects — Optical Flares & 렌즈 플레어 제어',channel:'Video Copilot',level:'초급',duration:'12:55',topic:'글로우',vid:'GsDkOfHkMXY',desc:'Video Copilot의 Optical Flares 플러그인을 활용해 K-pop MV의 화려한 렌즈 플레어와 라이트 버스트 이펙트를 제작하는 방법을 실습합니다.'},
+  // BLENDER
+  {id:'bl01',tab:'blender',title:'Blender 파티클 시스템 — K-pop 이펙트 완전 가이드',channel:'Blender Guru',level:'초급',duration:'25:10',topic:'파티클',vid:'bB3oPGI7RAk',desc:'Blender의 이미터와 헤어 파티클 시스템을 K-pop MV 비주얼에 적용하는 방법을 배웁니다. 파티클 애니메이션, 포스 필드, 충돌 처리까지 포함하는 종합 가이드입니다.'},
+  {id:'bl02',tab:'blender',title:'Blender Geometry Nodes — 절차적 파티클 & VFX',channel:'Default Cube',level:'중급',duration:'38:22',topic:'파티클',vid:'cdFs5pFB3rg',desc:'Blender 3.x의 Geometry Nodes를 활용해 절차적으로 생성되는 파티클 이펙트를 만드는 방법을 심화 수준으로 다룹니다. 재사용 가능한 노드 그룹 구성법도 학습합니다.'},
+  {id:'bl03',tab:'blender',title:'Blender — 캐릭터 리깅 & 댄스 애니메이션 제작',channel:'CGBoost',level:'중급',duration:'44:15',topic:'애니메이션',vid:'yk9eOuRAbeY',desc:'K-pop 아이돌 스타일의 캐릭터에 아마추어 리그를 구성하고 댄스 퍼포먼스 애니메이션을 키프레임으로 제작하는 전 과정을 다룹니다. NLA 에디터 활용법도 포함됩니다.'},
+  {id:'bl04',tab:'blender',title:'Blender EEVEE & Cycles — 네온 무대 라이팅 & 렌더링',channel:'Lights & Shadows',level:'초급',duration:'19:44',topic:'렌더링',vid:'HsEG8fNGqgA',desc:'K-pop 콘서트 무대 분위기를 Blender에서 구현하는 라이팅 셋업 방법을 배웁니다. EEVEE의 실시간 렌더링과 Cycles의 레이트레이싱을 비교하며 최적 설정을 찾습니다.'},
+  {id:'bl05',tab:'blender',title:'Blender — 유체 & 연기 시뮬레이션으로 MV 분위기 연출',channel:'CG Cookie',level:'중급',duration:'33:08',topic:'시뮬레이션',vid:'tAf-fkr0MDk',desc:'Blender의 Mantaflow 시뮬레이션 시스템으로 연기, 불꽃, 유체를 시뮬레이션하고 MV 씬에 통합하는 방법을 학습합니다. 렌더 설정 최적화 팁도 포함됩니다.'},
+  {id:'bl06',tab:'blender',title:'Blender — Shader Nodes 홀로그램 & 글리치 머티리얼',channel:'Ryan King Art',level:'초급',duration:'17:55',topic:'렌더링',vid:'BkwxIGnThh4',desc:'Blender Shader Editor를 사용해 홀로그램 효과, 글리치 머티리얼, 에너지 쉴드 등 SF/미래적 표현에 필요한 재질들을 노드로 제작하는 방법을 단계별로 설명합니다.'},
+  {id:'bl07',tab:'blender',title:'Blender Geometry Nodes — 사이버펑크 도시 환경 생성',channel:'Default Cube',level:'고급',duration:'56:40',topic:'모델링',vid:'KGpGjMEMJas',desc:'aespa KWANGYA 스타일의 광활한 사이버펑크 도시 배경을 Geometry Nodes로 절차적으로 생성하는 고급 기법을 학습합니다. 규칙 기반 건물 배치와 LOD 관리도 다룹니다.'},
+  {id:'bl08',tab:'blender',title:'Blender — Volumetric Light & God Rays 무대 표현',channel:'Ducky 3D',level:'초급',duration:'15:27',topic:'렌더링',vid:'F4uZ9Kx3oQ8',desc:'K-pop 콘서트의 상징인 빛 샤프트(God Rays)와 볼류메트릭 라이팅을 Blender에서 구현하는 가장 빠르고 효과적인 방법을 배웁니다. EEVEE와 Cycles 양쪽 설정을 모두 설명합니다.'},
+  // C4D
+  {id:'c4d01',tab:'c4d',title:'Cinema 4D MoGraph — 클로너 & 이펙터로 K-pop 타이틀 모션',channel:'EJ Hassenfratz',level:'초급',duration:'21:35',topic:'MoGraph',vid:'M7VSjFMG5cA',desc:'Cinema 4D의 MoGraph 시스템 핵심인 클로너와 이펙터를 활용해 K-pop MV 스타일의 다이나믹 타이틀 애니메이션을 제작하는 입문 강좌입니다.'},
+  {id:'c4d02',tab:'c4d',title:'Redshift 렌더러 — Cinema 4D 네온 씬 룩데브 마스터',channel:'Maxon',level:'중급',duration:'36:48',topic:'렌더링',vid:'E4GLb3yHZME',desc:'Maxon 공식 Redshift 튜토리얼로 Cinema 4D에서 GPU 기반 렌더러인 Redshift를 활용한 네온 조명 씬을 최고 품질로 렌더링하는 방법을 학습합니다.'},
+  {id:'c4d03',tab:'c4d',title:'Cinema 4D — X-Particles 대규모 파티클 플로우 시뮬',channel:'Insydium',level:'고급',duration:'49:00',topic:'이펙터',vid:'lxXGVd2xlhw',desc:'X-Particles 플러그인으로 수백만 개의 파티클을 제어하는 대규모 플로우 시뮬레이션을 제작합니다. aespa 뮤직비디오의 데이터 스트림 스타일 이펙트를 구현합니다.'},
+  {id:'c4d04',tab:'c4d',title:'Cinema 4D — 3D 타이포그래피 & 텍스트 애니메이션',channel:'Eyedesyn',level:'초급',duration:'23:55',topic:'타이포',vid:'kH7-dxg8rEo',desc:'Cinema 4D에서 3D 텍스트 오브젝트를 생성하고 MoGraph 애니메이션으로 다이나믹하게 움직이는 타이포그래피 이펙트를 제작하는 강좌입니다.'},
+  {id:'c4d05',tab:'c4d',title:'Cinema 4D — Voronoi Fracture 파괴 시뮬레이션',channel:'Luca Visual FX',level:'중급',duration:'30:48',topic:'이펙터',vid:'zQG7U9pPcRE',desc:'BLACKPINK Shut Down MV 스타일의 오브젝트 파괴 씬을 Cinema 4D Voronoi Fracture와 다이나믹스 시스템으로 제작합니다.'},
+  {id:'c4d06',tab:'c4d',title:'Cinema 4D + After Effects — MV 비주얼 파이프라인',channel:'Motion Array',level:'고급',duration:'43:15',topic:'렌더링',vid:'dFiUTzGHuEQ',desc:'Cinema 4D에서 렌더링한 3D 요소를 After Effects에서 실사 영상과 합성하는 프로페셔널 파이프라인을 학습합니다. EXR 멀티패스 렌더링부터 최종 컬러 그레이딩까지 완전한 워크플로우를 다룹니다.'},
+  {id:'c4d07',tab:'c4d',title:'Cinema 4D MoGraph — 스플라인 트레이서 에너지 라인',channel:'Greyscalegorilla',level:'중급',duration:'26:18',topic:'MoGraph',vid:'zMqBC3lKGcQ',desc:'MoGraph의 스플라인 및 트레이서 오브젝트를 활용해 aespa, EXO MV 스타일의 에너지 라인과 데이터 흐름 이펙트를 제작합니다.'},
+  {id:'c4d08',tab:'c4d',title:'Cinema 4D — Octane 렌더러 글래시 & 크리스탈 머티리얼',channel:'Octane Render',level:'고급',duration:'41:00',topic:'렌더링',vid:'H0nQBHUVqDU',desc:'Octane GPU 렌더러로 K-pop MV에 자주 등장하는 투명 유리, 크리스탈, 얼음 재질을 물리적으로 정확하게 재현합니다. BSDF 셰이더 파라미터를 상세히 설명합니다.'},
+  // HOUDINI
+  {id:'hou01',tab:'houdini',title:'Houdini — K-pop MV 스타일 파이어 & 스모크 FX 입문',channel:'Applied Houdini',level:'중급',duration:'46:20',topic:'시뮬레이션',vid:'nKiyg0LbqaU',desc:'Houdini의 Pyro 시뮬레이션 시스템으로 K-pop MV에 사용되는 불꽃 및 연기 효과를 제작하는 입문 강좌입니다. VEX 코딩 없이도 인상적인 FX를 만드는 방법을 배웁니다.'},
+  {id:'hou02',tab:'houdini',title:'Houdini — 절차적 파티클 시스템 & 포스 필드',channel:'Steven Knipping',level:'중급',duration:'38:55',topic:'파티클',vid:'cdFs5pFB3rg',desc:'Houdini POP 네트워크를 활용한 파티클 시스템 제작의 핵심을 배웁니다. POP Force, POP Drag, POP Attract 등 포스 필드를 조합해 복잡한 파티클 움직임을 연출합니다.'},
+  {id:'hou03',tab:'houdini',title:'Houdini — 강체 다이나믹스 파괴 & 리지드바디 시뮬',channel:'Houdini Engine',level:'고급',duration:'62:10',topic:'시뮬레이션',vid:'eFmjEwVCnDQ',desc:'Houdini RBD(Rigid Body Dynamics) 시스템으로 대규모 환경 파괴 씬을 구현하는 고급 강좌입니다. Voronoi 파편화부터 글루 네트워크, 컨스트레인트 시스템까지 전문적으로 다룹니다.'},
+  {id:'hou04',tab:'houdini',title:'Houdini VEX — 절차적 이펙트를 위한 코딩 입문',channel:'Rebelway',level:'중급',duration:'54:30',topic:'코딩',vid:'NfnMFMQRfzw',desc:'Houdini의 강력한 VEX 스크립팅 언어 입문 강좌. 수학적 함수와 for 루프를 활용해 파티클 속성 조작, 기하학 변형 등 코드 기반 이펙트 제작의 기초를 배웁니다.'},
+  {id:'hou05',tab:'houdini',title:'Houdini — 유체 시뮬레이션 FLIP Solver 실전 적용',channel:'Applied Houdini',level:'고급',duration:'71:00',topic:'시뮬레이션',vid:'tAf-fkr0MDk',desc:'Houdini FLIP 솔버로 물, 용암, 점성 유체 등 다양한 유체 효과를 시뮬레이션하는 전문 강좌입니다. K-pop MV의 판타지 씬에 적합한 컬러풀한 유체 연출 방법도 학습합니다.'},
+  // NUKE
+  {id:'nk01',tab:'nuke',title:'Nuke 기초 — 노드 기반 컴포지팅 완전 입문',channel:'Foundry',level:'초급',duration:'29:40',topic:'기초',vid:'GsDkOfHkMXY',desc:'Foundry Nuke의 노드 기반 컴포지팅 환경을 처음 접하는 분들을 위한 공식 입문 강좌입니다. 뷰어 활용, 노드 연결, 기본 컬러 보정, 간단한 합성 워크플로우를 체계적으로 배웁니다.'},
+  {id:'nk02',tab:'nuke',title:'Nuke — EXR 멀티패스 합성 & 릴라이팅 기법',channel:'CGMA',level:'중급',duration:'47:20',topic:'합성',vid:'LqCJuJ_73f0',desc:'3D 렌더러에서 출력한 EXR 멀티패스 이미지를 Nuke에서 합성하고 라이팅을 재조정(릴라이팅)하는 전문 기법을 학습합니다.'},
+  {id:'nk03',tab:'nuke',title:'Nuke — 로토스코핑 & 매트 페인팅 실전',channel:'VFX School',level:'중급',duration:'35:15',topic:'로토',vid:'klDMFOiSMaQ',desc:'Nuke의 Roto 노드와 RotoPaint를 활용한 정교한 로토스코핑 기법과 매트 페인팅 합성 방법을 배웁니다.'},
+  {id:'nk04',tab:'nuke',title:'Nuke 3D 공간 합성 — 카메라 프로젝션 & 3D 트래킹',channel:'Nukepedia',level:'고급',duration:'58:30',topic:'트래킹',vid:'QJZV7shOXkE',desc:'Nuke의 3D 공간 내에서 카메라 프로젝션과 3D 트래킹을 활용해 완전히 새로운 환경을 만드는 고급 합성 기법을 학습합니다.'},
+  {id:'nk05',tab:'nuke',title:'Nuke — 딥 컴포지팅 & 볼류메트릭 FX 합성',channel:'Foundry',level:'고급',duration:'43:50',topic:'합성',vid:'jUz4J8n5QMo',desc:'Nuke의 Deep Compositing 기능을 활용해 볼류메트릭 이펙트(연기, 구름, 파이어)를 정확하게 레이어 합성하는 최신 기법을 배웁니다.'},
+];
+
+// thumb helper
+function thumb(vid){return 'https://i.ytimg.com/vi/'+vid+'/mqdefault.jpg'}
+function ytUrl(vid){return 'https://www.youtube.com/watch?v='+vid}
+function embedUrl(vid){return 'https://www.youtube.com/embed/'+vid+'?autoplay=1&rel=0&modestbranding=1'}
+
+let state={tab:'all',level:'all',search:'',sort:'default',view:'grid',bookmarkMode:false};
+let bookmarks=new Set(JSON.parse(localStorage.getItem('kpop_bk')||'[]'));
+let currentVid=null;
+
+function durToSec(d){const p=d.split(':').map(Number);return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*60+p[1]}
+function lvlClass(l){return l==='초급'?'lvl-beg':l==='중급'?'lvl-int':'lvl-adv'}
+function tabLabel(t){return{all:'전체 튜토리얼',vfx:'VFX 합성',blender:'Blender',c4d:'Cinema 4D',houdini:'Houdini',nuke:'Nuke'}[t]}
+function tabDesc(t){return{
+  all:'After Effects · Blender · Cinema 4D · Houdini · Nuke — K-pop 뮤직비디오 스타일 비주얼 이펙트 제작의 모든 것.',
+  vfx:'After Effects, Nuke, Fusion 기반의 K-pop MV 파티클·글로우·홀로그램·합성 튜토리얼.',
+  blender:'Blender 파티클·시뮬레이션·렌더링·애니메이션으로 K-pop MV 비주얼을 완성합니다.',
+  c4d:'Cinema 4D MoGraph & Redshift로 K-pop MV 스타일 모션그래픽과 3D 씬을 제작합니다.',
+  houdini:'Houdini의 절차적 FX 시스템으로 대규모 파이어·파티클·파괴 시뮬레이션을 구현합니다.',
+  nuke:'Foundry Nuke의 노드 기반 컴포지팅으로 실사와 CG를 완벽하게 합성합니다.',
+}[t]}
+
+function filtered(){
+  let list=VIDEOS.filter(v=>{
+    if(state.tab!=='all'&&v.tab!==state.tab) return false;
+    if(state.level!=='all'&&v.level!==state.level) return false;
+    if(state.bookmarkMode&&!bookmarks.has(v.id)) return false;
+    if(state.search){const q=state.search.toLowerCase();if(!v.title.toLowerCase().includes(q)&&!v.channel.toLowerCase().includes(q)&&!v.topic.toLowerCase().includes(q)) return false;}
+    return true;
+  });
+  const s=state.sort;
+  if(s==='title') list.sort((a,b)=>a.title.localeCompare(b.title,'ko'));
+  else if(s==='dur_asc') list.sort((a,b)=>durToSec(a.duration)-durToSec(b.duration));
+  else if(s==='dur_desc') list.sort((a,b)=>durToSec(b.duration)-durToSec(a.duration));
+  return list;
+}
+
+function render(){
+  const list=filtered();
+  document.getElementById('resNum').textContent=list.length;
+  document.getElementById('heroTitle').innerHTML='K-POP MV <em>'+tabLabel(state.tab)+'</em>';
+  document.getElementById('heroDesc').textContent=tabDesc(state.tab);
+  document.getElementById('breadTab').textContent=tabLabel(state.tab);
+  const grid=document.getElementById('grid');
+  grid.className='video-grid'+(state.view==='list'?' list-view':'');
+  const af=document.getElementById('activeFilters');
+  af.innerHTML='';
+  if(state.level!=='all') af.innerHTML+='<div class="af-chip" onclick="clearLevel()">레벨: '+state.level+' ✕</div>';
+  if(state.search) af.innerHTML+='<div class="af-chip" onclick="clearSearch()">검색: "'+state.search+'" ✕</div>';
+  if(state.bookmarkMode) af.innerHTML+='<div class="af-chip" style="background:rgba(0,229,255,.1);border-color:rgba(0,229,255,.3);color:var(--cyan)" onclick="toggleBookmarkMode()">★ 북마크 ✕</div>';
+  if(!list.length){grid.innerHTML='<div class="empty"><div class="empty-icon">◌</div><h3>결과 없음</h3><p>검색어 또는 필터를 변경해 보세요.</p></div>';return;}
+  grid.innerHTML=list.map((v,i)=>`
+<div class="vcard" style="animation-delay:${i*0.04}s" onclick="openModal('${v.id}')">
+  <div class="thumb">
+    <img src="${thumb(v.vid)}" alt="${v.title}" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/nKiyg0LbqaU/mqdefault.jpg'">
+    <div class="thumb-overlay">
+      <div class="play-circle"><div class="play-tri"></div></div>
+    </div>
+    <span class="${lvlClass(v.level)} lvl-badge">${v.level}</span>
+    <span class="dur-badge">${v.duration}</span>
+    <div class="bk-btn ${bookmarks.has(v.id)?'saved':''}" onclick="toggleBk(event,'${v.id}')" title="북마크">${bookmarks.has(v.id)?'★':'☆'}</div>
+  </div>
+  <div class="info">
+    <div class="vtitle">${v.title}</div>
+    <div class="vmeta"><span class="vchannel">${v.channel}</span><span class="vtopic">${v.topic}</span></div>
+  </div>
+</div>`).join('');
+}
+
+function updateCounts(){
+  ['all','vfx','blender','c4d','houdini','nuke'].forEach(t=>{
+    document.getElementById('cnt-'+t).textContent=t==='all'?VIDEOS.length:VIDEOS.filter(v=>v.tab===t).length;
+  });
+  document.getElementById('stat-total').textContent=VIDEOS.length;
+  document.getElementById('stat-saved').textContent=bookmarks.size;
+}
+
+function setTab(t,el){state.tab=t;state.bookmarkMode=false;document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');document.getElementById('bkToggle').classList.remove('on');document.getElementById('bkToggle').textContent='☆ 북마크 보기';render();}
+function setLevel(l,el){state.level=l;document.querySelectorAll('.level-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');render();}
+function clearLevel(){state.level='all';document.querySelectorAll('.level-chip').forEach(c=>c.classList.toggle('active',c.dataset.level==='all'));render();}
+function clearSearch(){state.search='';document.getElementById('searchInput').value='';render();}
+function setView(v){state.view=v;document.getElementById('gridBtn').classList.toggle('active',v==='grid');document.getElementById('listBtn').classList.toggle('active',v==='list');render();}
+function toggleBookmarkMode(){state.bookmarkMode=!state.bookmarkMode;const btn=document.getElementById('bkToggle');btn.classList.toggle('on',state.bookmarkMode);btn.textContent=state.bookmarkMode?'★ 북마크 해제':'☆ 북마크 보기';render();}
+function toggleBk(e,id){
+  e.stopPropagation();
+  if(bookmarks.has(id)){bookmarks.delete(id);showToast('북마크 해제됨')}else{bookmarks.add(id);showToast('★ 북마크 저장됨')}
+  localStorage.setItem('kpop_bk',JSON.stringify([...bookmarks]));
+  document.getElementById('stat-saved').textContent=bookmarks.size;
+  render();
+  // update modal bk btn if open
+  if(currentVid&&currentVid.id===id) updateModalBkBtn();
+}
+
+// ── MODAL ──
+function openModal(id){
+  const v=VIDEOS.find(x=>x.id===id);
+  if(!v) return;
+  currentVid=v;
+  document.getElementById('modalTitle').textContent=v.title;
+  document.getElementById('modalYtLink').href=ytUrl(v.vid);
+  // embed iframe
+  document.getElementById('modalPlayer').innerHTML=
+    '<iframe src="'+embedUrl(v.vid)+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+  // meta
+  document.getElementById('modalMeta').innerHTML=`
+<div class="modal-meta-item"><div class="mmi-label">카테고리</div><div class="mmi-val">${tabLabel(v.tab)}</div></div>
+<div class="modal-meta-item"><div class="mmi-label">난이도</div><div class="mmi-val">${v.level}</div></div>
+<div class="modal-meta-item"><div class="mmi-label">재생 시간</div><div class="mmi-val">${v.duration}</div></div>
+<div class="modal-meta-item"><div class="mmi-label">채널</div><div class="mmi-val">${v.channel}</div></div>`;
+  document.getElementById('modalDesc').textContent=v.desc;
+  updateModalBkBtn();
+  document.getElementById('modalBg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function updateModalBkBtn(){
+  if(!currentVid) return;
+  const btn=document.getElementById('modalBkBtn');
+  const saved=bookmarks.has(currentVid.id);
+  btn.textContent=saved?'★ 북마크됨':'☆ 북마크';
+  btn.classList.toggle('bk-active',saved);
+}
+
+function modalToggleBk(){
+  if(!currentVid) return;
+  if(bookmarks.has(currentVid.id)){bookmarks.delete(currentVid.id);showToast('북마크 해제됨')}
+  else{bookmarks.add(currentVid.id);showToast('★ 북마크 저장됨')}
+  localStorage.setItem('kpop_bk',JSON.stringify([...bookmarks]));
+  document.getElementById('stat-saved').textContent=bookmarks.size;
+  updateModalBkBtn();
+  render();
+}
+
+function closeModal(){
+  document.getElementById('modalBg').classList.remove('open');
+  document.body.style.overflow='';
+  // stop video
+  document.getElementById('modalPlayer').innerHTML='';
+  currentVid=null;
+}
+function handleModalBgClick(e){if(e.target===document.getElementById('modalBg')) closeModal();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeModal();});
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
+
+// ── CURSOR ──
+const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function loop(){cur.style.left=mx+'px';cur.style.top=my+'px';rx+=(mx-rx)*.12;ry+=(my-ry)*.12;cur2.style.left=rx+'px';cur2.style.top=ry+'px';requestAnimationFrame(loop);})();
+document.querySelectorAll('a,button,.nav-item,.vcard,.level-chip,.bk-btn,.bookmark-toggle,.view-btn,.sort-select').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='18px';cur.style.height='18px';cur.style.background='var(--cyan)';cur2.style.width='48px';cur2.style.height='48px'});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';cur.style.background='var(--pink)';cur2.style.width='32px';cur2.style.height='32px'});
+});
+
+document.getElementById('searchInput').addEventListener('input',e=>{state.search=e.target.value.trim();render();});
+
+updateCounts();
+render();
+</script>
+</body>
+</html>
