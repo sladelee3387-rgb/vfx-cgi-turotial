@@ -1,0 +1,14 @@
+{
+  "name": "Remix: studyo copyright fixed",
+  "description": "An AI-powered study platform with intelligent word annotation, real-time translation, and audiobook integration tailored to your education level.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "AI Chat",
+    "Voice Interaction",
+    "Document Translation",
+    "Smart Annotations"
+  ]
+}

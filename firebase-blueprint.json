@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Information about a user",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "EbbinghausItem": {
+      "title": "Ebbinghaus Spaced Repetitive Tracker Item",
+      "description": "Main tracker item for Ebbinghaus repetition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["material", "quiz", "flashcard", "recall"] },
+        "originalDate": { "type": "string", "format": "date-time" },
+        "nextReviewDate": { "type": "string", "format": "date-time" },
+        "stage": { "type": "number" },
+        "completed": { "type": "boolean" },
+        "history": { "type": "array" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["id", "title", "type", "stage", "completed"]
+    },
+    "MistakeQuestion": {
+      "title": "Metacognitive Mistake Diary Question",
+      "description": "Mistake logged for a student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "question": { "type": "string" },
+        "options": { "type": "array" },
+        "userAnswer": { "type": "string" },
+        "correctAnswer": { "type": "string" },
+        "explanation": { "type": "string" },
+        "aiFeedback": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "reviewStatus": { "type": "string", "enum": ["review", "mastered"] },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["id", "question", "options", "userAnswer", "correctAnswer", "explanation", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Profile information of users"
+    },
+    "/users/{userId}/ebbinghaus/{itemId}": {
+      "schema": "EbbinghausItem",
+      "description": "User's Ebbinghaus repeating items"
+    },
+    "/users/{userId}/mistakes/{mistakeId}": {
+      "schema": "MistakeQuestion",
+      "description": "User's mistake tracking diary"
+    }
+  }
+}

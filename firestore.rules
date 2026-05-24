@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable, hardened global helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User Profile schema validation
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() <= 128
+          && data.email is string && data.email.size() <= 256;
+    }
+
+    // Ebbinghaus spaced reputation item validation
+    function isValidEbbinghaus(data) {
+      return data.id is string && data.id.size() <= 128
+          && data.title is string && data.title.size() <= 500
+          && data.type is string && data.type.size() <= 50
+          && data.stage is int
+          && data.completed is bool;
+    }
+
+    // Metacognitive mistake question validation
+    function isValidMistake(data) {
+      return data.id is string && data.id.size() <= 128
+          && data.question is string && data.question.size() <= 10000
+          && data.correctAnswer is string && data.correctAnswer.size() <= 2000;
+    }
+
+    // User collection path rules
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data)
+                    && request.resource.data.uid == resource.data.uid;
+      allow delete: if false;
+
+      // Ebbinghaus Spaced Repetitive Tracker subcollection rules
+      match /ebbinghaus/{itemId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(itemId) && isValidEbbinghaus(request.resource.data);
+        allow update: if isOwner(userId) && isValidId(itemId) && isValidEbbinghaus(request.resource.data)
+                      && request.resource.data.id == resource.data.id;
+        allow delete: if isOwner(userId) && isValidId(itemId);
+      }
+
+      // Metacognitive Mistake Diary subcollection rules
+      match /mistakes/{mistakeId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(mistakeId) && isValidMistake(request.resource.data);
+        allow update: if isOwner(userId) && isValidId(mistakeId) && isValidMistake(request.resource.data)
+                      && request.resource.data.id == resource.data.id;
+        allow delete: if isOwner(userId) && isValidId(mistakeId);
+      }
+    }
+  }
+}
